@@ -30,6 +30,9 @@ const terrainVertexShader = `
   uniform float uTime;
   uniform float uAmplitude;
 
+  // Normalized height passed to the fragment shader
+  varying float vHeight;
+
   void main() {
     // Copies the original vertex position so it can be displaced
     vec3 displacedPosition = position;
@@ -44,6 +47,9 @@ const terrainVertexShader = `
     // Combines the waves and scales them so the tallest possible peak equals uAmplitude
     displacedPosition.y += uAmplitude * (waveA + waveB + waveC) / 2.5;
 
+    // Normalizes the height to -1.0 to 1.0 range so colors stay consistent
+    vHeight = displacedPosition.y / uAmplitude;
+
     // Equivalent to V * M * v
     vec4 modelViewPosition = modelViewMatrix * vec4(displacedPosition, 1.0);
 
@@ -51,10 +57,30 @@ const terrainVertexShader = `
   }
 `;
 
-// Fragment shader that colors every pixel of the terrain
+// Fragment shader that colors the terrain based on its height 
 const terrainFragmentShader = `
+  // Normalized height received from the vertex shader
+  varying float vHeight;
+
   void main() {
-    gl_FragColor = vec4(0.2, 0.8, 0.4, 1.0);
+    // Converts the height from the -1.0 to 1.0 range into the 0.0 to 1.0 range
+    float t = vHeight * 0.5 + 0.5;
+
+    // Colors for each elevation section
+    // The ideas for the colors are based on the real world and what kinds of colors represent different elevations
+    vec3 deepWater = vec3(0.05, 0.15, 0.4);
+    vec3 shallowWater = vec3(0.1, 0.5, 0.7);
+    vec3 grass = vec3(0.2, 0.6, 0.25);
+    vec3 rock = vec3(0.45, 0.4, 0.35);
+    vec3 snow = vec3(0.95, 0.95, 0.95);
+
+    // Blends from one band to the next as the height rises
+    vec3 color = mix(deepWater, shallowWater, smoothstep(0.0, 0.35, t));
+    color = mix(color, grass, smoothstep(0.35, 0.45, t));
+    color = mix(color, rock, smoothstep(0.6, 0.75, t));
+    color = mix(color, snow, smoothstep(0.82, 0.92, t));
+
+    gl_FragColor = vec4(color, 1.0);
   }
 `;
 
@@ -77,7 +103,7 @@ function createTerrain() {
       uTime: {value: 0.0},
       uAmplitude: {value: 1.5}
     },
-    wireframe: true
+    wireframe: false
   });
 
   return new THREE.Mesh(geometry, material);
