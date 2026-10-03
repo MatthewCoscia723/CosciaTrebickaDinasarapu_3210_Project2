@@ -144,6 +144,10 @@ let orbitAngle = 0;
 const orbitRadius = 25;
 const orbitSpeed = 0.5;
 
+// Solar panel rotation configuration
+let solarPanelAngle = 0;
+let solarPanelSpeed = 1;
+
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setClearColor(0x111111, 1.0); // Dark grey background
@@ -171,6 +175,11 @@ function animate() {
 
   // Make the satellite always look at the center of the terrain
   satellite.lookAt(0, 0, 0);
+  
+  // Update the solar panel rotation
+  solarPanelAngle += solarPanelSpeed * deltaTime;
+  leftPanel.rotation.x = solarPanelAngle;
+  rightPanel.rotation.x = solarPanelAngle;
 
   renderer.render(scene, camera);
 }
