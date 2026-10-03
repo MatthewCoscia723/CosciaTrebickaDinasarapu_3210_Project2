@@ -137,7 +137,12 @@ rightPanel.position.x = 2.5;
 satellite.add(rightPanel);
 
 satellite.position.y = 8;
-scene.add(satellite);
+scene.add(satellite)
+
+// Satellite orbit configuration
+let orbitAngle = 0;
+const orbitRadius = 25;
+const orbitSpeed = 0.5;
 
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -159,7 +164,13 @@ function animate() {
   // Sends the total elapsed time to the terrain shader
   terrain.material.uniforms.uTime.value = clock.elapsedTime;
 
+  // Update the satellite orbit
+  orbitAngle += orbitSpeed * deltaTime;
+  satellite.position.x = Math.cos(orbitAngle) * orbitRadius;
+  satellite.position.y = Math.sin(orbitAngle) * orbitRadius - 5; // -5 for the offset of satellite flying off screen
 
+  // Make the satellite always look at the center of the terrain
+  satellite.lookAt(0, 0, 0);
 
   renderer.render(scene, camera);
 }
