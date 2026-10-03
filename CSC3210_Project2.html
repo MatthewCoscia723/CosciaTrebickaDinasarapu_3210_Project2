@@ -34,6 +34,16 @@ const terrainVertexShader = `
     // Copies the original vertex position so it can be displaced
     vec3 displacedPosition = position;
 
+    // Large, slow wave travelling along the x axis
+    float waveA = sin(position.x * 0.3 + uTime * 1.0);
+    // Medium wave travelling along the z axis at a different speed
+    float waveB = cos(position.z * 0.25 + uTime * 0.8);
+    // Small, fast wave travelling along the diagonal between the x and z axes
+    float waveC = 0.5 * sin((position.x + position.z) * 0.6 + uTime * 1.7);
+
+    // Combines the waves and scales them so the tallest possible peak equals uAmplitude
+    displacedPosition.y += uAmplitude * (waveA + waveB + waveC) / 2.5;
+
     // Equivalent to V * M * v
     vec4 modelViewPosition = modelViewMatrix * vec4(displacedPosition, 1.0);
 
