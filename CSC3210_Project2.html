@@ -113,6 +113,32 @@ function createTerrain() {
 const terrain = createTerrain();
 scene.add(terrain);
 
+// Satellite body creation
+const satellite = new THREE.Group();
+
+// Main satellite body
+const bodyGeometry = new THREE.BoxGeometry(2,1,2);
+const bodyMaterial = new THREE.MeshBasicMaterial({color: 0xaaaaaa})
+const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+satellite.add(body);
+
+// Panel material and geometry
+const panelGeometry = new THREE.BoxGeometry(3, 0.1, 1.5);
+const panelMaterial = new THREE.MeshBasicMaterial({color: 0x222222});
+
+// Left solar panel
+const leftPanel = new THREE.Mesh(panelGeometry, panelMaterial);
+leftPanel.position.x = -2.5;
+satellite.add(leftPanel);
+
+// Right solar panel
+const rightPanel = new THREE.Mesh(panelGeometry, panelMaterial);
+rightPanel.position.x = 2.5;
+satellite.add(rightPanel);
+
+satellite.position.y = 8;
+scene.add(satellite);
+
 // 4. Initialize the WebGL Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setClearColor(0x111111, 1.0); // Dark grey background
@@ -132,6 +158,8 @@ function animate() {
 
   // Sends the total elapsed time to the terrain shader
   terrain.material.uniforms.uTime.value = clock.elapsedTime;
+
+
 
   renderer.render(scene, camera);
 }
