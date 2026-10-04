@@ -20,6 +20,18 @@ const camera = new THREE.PerspectiveCamera(
   0.1, 
   1000
 );
+
+const orthographicCamera = new THREE.OrthographicCamera(
+  -25,   // Left
+  25,    // Right
+  25,    // Top
+  -25,   // Bottom
+  0.1,   // Near
+  1000   // Far
+);
+orthographicCamera.position.set(0, 50, 0);
+orthographicCamera.lookAt(0, 0, 0);
+
 camera.position.set(0, 25, 40); // Position the camera above and behind the terrain angled down
 camera.lookAt(new THREE.Vector3(0, 0, 0));
 scene.add(camera);
@@ -304,7 +316,7 @@ function animate() {
   }
   // Continuously update the particles positions
   thrusterParticles.geometry.attributes.position.needsUpdate = true;
-  renderer.render(scene, camera);
+  renderer.render(scene, orthographicCamera);
 }
 
 animate();
