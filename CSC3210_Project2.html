@@ -147,6 +147,7 @@ const terrainFragmentShader = `
 // Constants representing the size of the terrain and how densely the terrain is segmented
 const terrainSize = 40;
 const terrainSegments = 150;
+const cameraBoundary = terrainSize / 2 + 30;
 
 // Function that creates the terrain mesh as a finely subdivided plane that is laid flat
 function createTerrain() {
@@ -387,6 +388,8 @@ function animate() {
     if (moveRight) {
       camera.position.addScaledVector(right, cameraSpeed * deltaTime);
     }
+    camera.position.x = Math.max(-cameraBoundary, Math.min(cameraBoundary, camera.position.x));
+    camera.position.z = Math.max(-cameraBoundary, Math.min(cameraBoundary, camera.position.z));
   }
 
   // Sends the total elapsed time to the terrain shader
