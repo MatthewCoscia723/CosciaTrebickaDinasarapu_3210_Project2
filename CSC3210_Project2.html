@@ -139,6 +139,24 @@ satellite.add(rightPanel);
 satellite.position.y = 8;
 scene.add(satellite)
 
+// Satellite particles
+const particleGeometry = new THREE.BufferGeometry();
+const particleCount = 50;
+const particlePositions = [];
+const particleVelocities = [];
+
+for (let i = 0; i < particleCount; i++)
+{
+  particlePositions.push(0, 0, 0);
+  particleVelocities.push(0, 0, 0);
+}
+
+particleGeometry.setAttribute("position", new THREE.Float32BufferAttribute(particlePositions, 3));
+
+const particleMaterial = new THREE.PointsMaterial({color: 0xffa500, size: 0.15});
+const thrusterParticles = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(thrusterParticles)
+
 // Satellite orbit configuration
 let orbitAngle = 0;
 const orbitRadius = 25;
@@ -173,14 +191,45 @@ function animate() {
   satellite.position.x = Math.cos(orbitAngle) * orbitRadius;
   satellite.position.y = Math.sin(orbitAngle) * orbitRadius - 5; // -5 for the offset of satellite flying off screen
 
-  // Make the satellite always look at the center of the terrain
-  satellite.lookAt(0, 0, 0);
-  
+  satellite.lookAt(0,0,0);
+
   // Update the solar panel rotation
   solarPanelAngle += solarPanelSpeed * deltaTime;
   leftPanel.rotation.x = solarPanelAngle;
   rightPanel.rotation.x = solarPanelAngle;
 
+  // Compute the tangent direction (derivatives) of x and y components, then negate them (because thrust is backwards of satellite trajectory)
+  let thrustX = Math.sin(orbitAngle);
+  let thrustY = -Math.cos(orbitAngle);
+
+  // Array of all particles x,y,z positions
+  const pos = thrusterParticles.geometry.attributes.position.array;
+
+  for (let i = 0; i < particleCount; i++)
+  {
+    if (particleVelocities[i*3] === 0 && particleVelocities[i*3+1] === 0)
+    {
+      pos[i*3] = satellite.position.x;
+      pos[i*3+1] = satellite.position.y;
+      pos[i*3+2] = satellite.position.z;
+
+      particleVelocities[i*3] = thrustX * (1 + Math.random()*0.5);
+      particleVelocities[i*3+1] = thrustY * (1 + Math.random()*0.5);
+      particleVelocities[i*3 + 2] = (Math.random() - 0.5) * 0.2;
+    }
+
+    pos[i*3] += particleVelocities[i*3] * deltaTime * 8;
+    pos[i*3 + 1] += particleVelocities[i*3 + 1] * deltaTime * 8;
+    pos[i*3 + 2] += particleVelocities[i*3 + 2] * deltaTime * 8;
+
+    if (Math.abs(pos[i*3] - satellite.position.x) > 5 || Math.abs(pos[i*3+1] - satellite.position.y) > 5)
+    {
+      particleVelocities[i*3] = 0;
+      particleVelocities[i*3+1] = 0;
+      particleVelocities[i*3+2] = 0;
+    }
+  }
+  thrusterParticles.geometry.attributes.position.needsUpdate = true;
   renderer.render(scene, camera);
 }
 
