@@ -341,6 +341,22 @@ document.addEventListener('mousemove', function(event) {
   }
 });
 
+window.addEventListener('resize', function() {
+  const aspect = window.innerWidth / window.innerHeight;
+
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  orthographicCamera.left = -25 * aspect;
+  orthographicCamera.right = 25 * aspect;
+  orthographicCamera.top = 25;
+  orthographicCamera.bottom = -25;
+
+  orthographicCamera.updateProjectionMatrix();
+});
+
 // Clock that tracks real world time between frames
 const clock = new THREE.Clock();
 
