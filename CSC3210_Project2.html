@@ -136,6 +136,13 @@ const rightPanel = new THREE.Mesh(panelGeometry, panelMaterial);
 rightPanel.position.x = 2.5;
 satellite.add(rightPanel);
 
+// Viewing face for satellite (where it's facing)
+const sphereGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+const sphereMaterial = new THREE.MeshBasicMaterial({color: 0x444444});
+const frontSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+frontSphere.position.z = 1.2;
+satellite.add(frontSphere);
+
 satellite.position.y = 8;
 scene.add(satellite)
 
