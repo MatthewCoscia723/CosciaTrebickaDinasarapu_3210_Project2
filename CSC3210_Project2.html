@@ -348,7 +348,7 @@ window.addEventListener('resize', function() {
   camera.updateProjectionMatrix();
 
   renderer.setSize(window.innerWidth, window.innerHeight);
-  
+
   orthographicCamera.left = -25 * aspect;
   orthographicCamera.right = 25 * aspect;
   orthographicCamera.top = 25;
@@ -368,17 +368,24 @@ function animate() {
   const deltaTime = clock.getDelta();
 
   if (activeCamera === camera) {
+    
+    const forward = new THREE.Vector3();
+    camera.getWorldDirection(forward);
+    forward.y = 0;
+    forward.normalize();
+    
+    const right = new THREE.Vector3(-forward.z, 0, forward.x);
     if (moveForward) {
-      camera.position.z -= cameraSpeed * deltaTime;
+      camera.position.addScaledVector(forward, cameraSpeed * deltaTime);
     }
-    else if (moveBackward) {
-      camera.position.z += cameraSpeed * deltaTime;
+    if (moveBackward) {
+      camera.position.addScaledVector(forward, -cameraSpeed * deltaTime);
     }
-    else if (moveLeft) {
-      camera.position.x -= cameraSpeed * deltaTime;
+    if (moveLeft) {
+      camera.position.addScaledVector(right, -cameraSpeed * deltaTime);
     }
-    else if (moveRight) {
-      camera.position.x += cameraSpeed * deltaTime;
+    if (moveRight) {
+      camera.position.addScaledVector(right, cameraSpeed * deltaTime);
     }
   }
 
