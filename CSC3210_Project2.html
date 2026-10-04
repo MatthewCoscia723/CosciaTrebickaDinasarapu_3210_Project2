@@ -33,6 +33,14 @@ const terrainVertexShader = `
   // Normalized height passed to the fragment shader
   varying float vHeight;
 
+  // Position of the satellite
+  uniform vec3 uSatellitePosition;
+  // How far from the point under the satellite the highlight reaches
+  uniform float uHighlightRadius;
+
+  // Strength of the highlight passed to the fragment shader
+  varying float vHighlight;
+
   void main() {
     // Copies the original vertex position so it can be displaced
     vec3 displacedPosition = position;
@@ -49,6 +57,21 @@ const terrainVertexShader = `
 
     // Normalizes the height to -1.0 to 1.0 range so colors stay consistent
     vHeight = displacedPosition.y / uAmplitude;
+
+    // Horizontal distance from this vertex to the point directly below the satellite
+    float distanceToSatellite = distance(position.xz, uSatellitePosition.xz);
+    // Strength of the highlight
+    float highlight = 1.0 - smoothstep(uHighlightRadius * 0.5, uHighlightRadius, distanceToSatellite);
+
+    // Fades the highlight out when the satellite dips below the terrain
+    highlight *= smoothstep(0.0, 2.0, uSatellitePosition.y);
+
+    // Scales up the terrain under the satellite, up to 2.5 times its normal height
+    displacedPosition.y *= 1.0 + highlight * 1.5;
+    // Lifts up the highlighted area so it rises clearly above the surrounding terrain
+    displacedPosition.y += highlight * 2.0;
+
+    vHighlight = highlight;
 
     // Equivalent to V * M * v
     vec4 modelViewPosition = modelViewMatrix * vec4(displacedPosition, 1.0);
@@ -101,7 +124,9 @@ function createTerrain() {
     fragmentShader: terrainFragmentShader,
     uniforms: {
       uTime: {value: 0.0},
-      uAmplitude: {value: 1.5}
+      uAmplitude: {value: 1.5},
+      uSatellitePosition: {value: new THREE.Vector3()},
+      uHighlightRadius: {value: 5.0}
     },
     wireframe: false
   });
@@ -189,7 +214,7 @@ scene.add(thrusterParticles)
 
 // Satellite orbit configuration
 let orbitAngle = 0;
-const orbitRadius = 25;
+const orbitRadius = terrainSize / 2;
 const orbitSpeed = 0.5;
 
 // Solar panel rotation configuration
@@ -222,6 +247,9 @@ function animate() {
   satellite.position.y = Math.sin(orbitAngle) * orbitRadius - 5; // -5 for the offset of satellite flying off screen
 
   satellite.lookAt(0,0,0);
+
+  // Update the highlight position for the terrain shader
+  terrain.material.uniforms.uSatellitePosition.value.copy(satellite.position);
 
   // Update the solar panel rotation
   solarPanelAngle += solarPanelSpeed * deltaTime;
