@@ -35,8 +35,21 @@ orthographicCamera.lookAt(0, 0, 0);
 // Camera currently being used
 let activeCamera = camera;
 
+// Perspective camera mouse viewing
+let yaw = 0;
+let pitch = 0;
+
+const mouseSensitivity = 0.002;
+const pitchLimit = Math.PI / 2 - 0.1;
+
 camera.position.set(0, 25, 40); // Position the camera above and behind the terrain angled down
 camera.lookAt(new THREE.Vector3(0, 0, 0));
+const target = new THREE.Vector3(0, 0, 0);
+const initialDirection = target.clone().sub(camera.position).normalize();
+
+pitch = Math.asin(initialDirection.y);
+yaw = Math.atan2(initialDirection.x, -initialDirection.z);
+
 scene.add(camera);
 
 // Vertex shader that displaces terrain heights over time and applies the Model View Projection pipeline
@@ -307,6 +320,24 @@ document.addEventListener('keyup', function(event) {
     case "d":
       moveRight = false;
       break;
+  }
+});
+
+document.addEventListener('mousemove', function(event) {
+  if (activeCamera === camera) {
+    yaw += event.movementX * mouseSensitivity;
+    pitch -= event.movementY * mouseSensitivity;
+
+    // Limit the pitch to prevent flipping
+    pitch = Math.max(-pitchLimit, Math.min(pitchLimit, pitch));
+    const direction = new THREE.Vector3(
+      Math.sin(yaw) * Math.cos(pitch),
+      Math.sin(pitch),
+      -Math.cos(yaw) * Math.cos(pitch)
+    );
+
+    const lookAtPoint = camera.position.clone().add(direction);
+    camera.lookAt(lookAtPoint);
   }
 });
 
