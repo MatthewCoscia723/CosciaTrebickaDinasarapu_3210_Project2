@@ -71,6 +71,7 @@ const terrainVertexShader = `
     // Lifts up the highlighted area so it rises clearly above the surrounding terrain
     displacedPosition.y += highlight * 2.0;
 
+    // Passes the highlight strength to the fragment shader
     vHighlight = highlight;
 
     // Equivalent to V * M * v
@@ -80,10 +81,13 @@ const terrainVertexShader = `
   }
 `;
 
-// Fragment shader that colors the terrain based on its height 
+// Fragment shader that colors the terrain based on its height and tints the area beneath the satellite
 const terrainFragmentShader = `
   // Normalized height received from the vertex shader
   varying float vHeight;
+
+  // Strength of the highlight received from the vertex shader
+  varying float vHighlight;
 
   void main() {
     // Converts the height from the -1.0 to 1.0 range into the 0.0 to 1.0 range
@@ -103,6 +107,11 @@ const terrainFragmentShader = `
     color = mix(color, rock, smoothstep(0.6, 0.75, t));
     color = mix(color, snow, smoothstep(0.82, 0.92, t));
 
+    // Warm orange color used to highlight the terrain beneath the satellite
+    vec3 highlightColor = vec3(1.0, 0.55, 0.1);
+    // Blends the highlight color over the terrain color based on the highlight strength
+    color = mix(color, highlightColor, vHighlight * 0.6);
+
     gl_FragColor = vec4(color, 1.0);
   }
 `;
@@ -118,7 +127,7 @@ function createTerrain() {
   // Rotates the plane's vertices from standing upright to lying flat
   geometry.rotateX(-Math.PI / 2);
 
-  // Custom shader material that displaces the terrain using time-based uniforms
+  // Custom shader material that displaces and colors the terrain using time and satellite position uniforms
   const material = new THREE.ShaderMaterial({
     vertexShader: terrainVertexShader,
     fragmentShader: terrainFragmentShader,
