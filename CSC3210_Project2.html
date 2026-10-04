@@ -252,15 +252,60 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
+// Perspective camera movement controls
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+
+const cameraSpeed = 10;
+
 // Switch between perspective and orthographic cameras
 document.addEventListener('keydown', function(event) {
   switch(event.key) {
     case '1':
       activeCamera = camera;
       break;
-      
+
     case '2':
       activeCamera = orthographicCamera;
+      break;
+    
+    case "w":
+      moveForward = true;
+      break;
+
+    case "s":
+      moveBackward = true;
+      break;
+
+    case "a":
+      moveLeft = true;
+      break;
+
+    case "d":
+      moveRight = true;
+      break;
+  }
+});
+
+// Stop camera movement when a movement key is released
+document.addEventListener('keyup', function(event) {
+  switch(event.key) {
+    case "w":
+      moveForward = false;
+      break;
+    
+    case "s":
+      moveBackward = false;
+      break;
+
+    case "a":
+      moveLeft = false;
+      break;
+
+    case "d":
+      moveRight = false;
       break;
   }
 });
@@ -274,6 +319,21 @@ function animate() {
 
   // Time in seconds since the last frame, used for movement that is independent of frame rate
   const deltaTime = clock.getDelta();
+
+  if (activeCamera === camera) {
+    if (moveForward) {
+      camera.position.z -= cameraSpeed * deltaTime;
+    }
+    else if (moveBackward) {
+      camera.position.z += cameraSpeed * deltaTime;
+    }
+    else if (moveLeft) {
+      camera.position.x -= cameraSpeed * deltaTime;
+    }
+    else if (moveRight) {
+      camera.position.x += cameraSpeed * deltaTime;
+    }
+  }
 
   // Sends the total elapsed time to the terrain shader
   terrain.material.uniforms.uTime.value = clock.elapsedTime;
