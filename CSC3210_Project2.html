@@ -266,6 +266,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
+renderer.domElement.addEventListener('click', function() {
+  renderer.domElement.requestPointerLock();
+});
+
 // Perspective camera movement controls
 let moveForward = false;
 let moveBackward = false;
@@ -325,7 +329,7 @@ document.addEventListener('keyup', function(event) {
 });
 
 document.addEventListener('mousemove', function(event) {
-  if (activeCamera === camera) {
+  if (activeCamera === camera && document.pointerLockElement === renderer.domElement) {
     yaw += event.movementX * mouseSensitivity;
     pitch -= event.movementY * mouseSensitivity;
 
